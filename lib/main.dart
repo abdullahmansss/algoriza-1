@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:country_code_picker/country_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:test1/features/counter/presentation/pages/counter_page.dart';
 import 'package:test1/features/login/presentation/pages/login_page.dart';
 
 void main() {
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: const [
         CountryLocalizations.delegate,
       ],
-      home: const LoginPage(),
+      home: const CounterPage(),
     );
   }
 }

@@ -2,7 +2,7 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:test1/core/util/widgets/my_asset_image.dart';
-import 'package:test1/my_button.dart';
+import 'package:test1/core/util/widgets/my_button.dart';
 
 class LoginWidget extends StatelessWidget {
   final formKey = GlobalKey<FormState>();
