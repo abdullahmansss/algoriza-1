@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:test1/core/util/blocs/app/cubit.dart';
 import 'package:test1/features/counter/presentation/pages/counter_page.dart';
+import 'package:test1/features/home/presentation/pages/home_page.dart';
 import 'package:test1/features/login/presentation/pages/login_page.dart';
 import 'package:test1/features/users/presentation/pages/users_page.dart';
 
@@ -29,14 +30,24 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.teal,
+          appBarTheme: AppBarTheme(
+            color: Colors.transparent,
+            elevation: 0,
+            titleTextStyle: const TextStyle(
+              color: Colors.black,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+            centerTitle: false,
+            systemOverlayStyle: Platform.isIOS
+                ? null
+                : const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.dark,
+            ),
+          ),
         ),
-        // supportedLocales: const [
-        //   Locale("en"),
-        // ],
-        // localizationsDelegates: const [
-        //   CountryLocalizations.delegate,
-        // ],
-        home: const UsersPage(),
+        home: const HomePage(),
       ),
     );
   }
