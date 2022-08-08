@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test1/features/add_task/presentation/pages/add_task_page.dart';
 import 'package:test1/features/home/presentation/widgets/all_widget.dart';
 import 'package:test1/features/home/presentation/widgets/completed_widget.dart';
 import 'package:test1/features/home/presentation/widgets/favorites_widget.dart';
@@ -75,6 +76,38 @@ class _HomeWidgetState extends State<HomeWidget> {
                 UnCompletedWidget(),
                 FavoritesWidget(),
               ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Container(
+              width: double.infinity,
+              clipBehavior: Clip.antiAliasWithSaveLayer,
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(
+                  12.0,
+                ),
+              ),
+              child: MaterialButton(
+                height: 54.0,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddTaskPage(),
+                    ),
+                  );
+                },
+                child: const Text(
+                  'Add New Task',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
           ),
         ],

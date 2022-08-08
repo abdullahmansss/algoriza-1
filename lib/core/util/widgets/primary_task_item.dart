@@ -23,9 +23,9 @@ class PrimaryTaskItem extends StatelessWidget {
                 width: 50.0,
                 height: 50.0,
                 decoration: BoxDecoration(
-                  color: index %2 == 0 ? Colors.red : null,
+                  color: index %2 == 0 ? Colors.green : null,
                   border: Border.all(
-                    color: Colors.red,
+                    color: Colors.green,
                     width: 2.0,
                   ),
                   borderRadius: BorderRadius.circular(10.0),
