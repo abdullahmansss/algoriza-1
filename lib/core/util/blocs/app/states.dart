@@ -15,3 +15,5 @@ class AppDatabaseLoading extends AppStates {}
 class AppDatabaseUsers extends AppStates {}
 
 class AppSelectUser extends AppStates {}
+
+class TaskColorChanged extends AppStates {}

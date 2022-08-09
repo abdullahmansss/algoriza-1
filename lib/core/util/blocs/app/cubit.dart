@@ -1,6 +1,10 @@
+import 'dart:ffi';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:test1/core/models/task_model.dart';
 import 'package:test1/core/util/blocs/app/states.dart';
 import 'package:path/path.dart' as p;
 
@@ -13,7 +17,7 @@ class AppBloc extends Cubit<AppStates> {
 
   void initDatabase() async {
     var databasesPath = await getDatabasesPath();
-    String path = p.join(databasesPath, 'users.db');
+    String path = p.join(databasesPath, 'tasks.db');
 
     debugPrint('AppDatabaseInitialized');
 
@@ -32,7 +36,13 @@ class AppBloc extends Cubit<AppStates> {
       version: 1,
       onCreate: (Database db, int version) async {
         await db.execute(
-          'CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)',
+          'CREATE TABLE tasks (id INTEGER PRIMARY KEY,'
+          ' title TEXT, date TEXT, startTime TEXT,'
+          ' endTime TEXT,'
+          ' reminder INTEGER,'
+          ' color INTEGER,'
+          ' completed INTEGER,'
+          ' favorite INTEGER)',
         );
 
         debugPrint('Table Created');
@@ -41,41 +51,54 @@ class AppBloc extends Cubit<AppStates> {
         debugPrint('AppDatabaseOpened');
         database = db;
 
-        getUsersData();
+        getTasksData();
       },
     );
   }
 
   TextEditingController usernameController = TextEditingController();
 
-  void insertUserData() {
-    if(selectedUser.isNotEmpty) {
-      updateUserData();
-      return;
-    }
+  void insertTaskData({
+    required String title,
+    required String date,
+    required String startTime,
+    required String endTime,
+    required int reminder,
+  }) async {
+    await database.transaction(
+      (txn) async {
+        int id = await txn.rawInsert(
+          'INSERT INTO tasks (title, date, startTime, endTime, reminder, color, completed, favorite)'
+          ' VALUES ("$title", "$date", "$startTime", "$endTime", $reminder, $selectedColorIndex, 1, 1)',
+        );
+        debugPrint('Task Inserted');
+      },
+    ).then((value) {
+      debugPrint('Task Data Inserted');
 
-    database.transaction((txn) async {
-      txn.rawInsert(
-          'INSERT INTO users(name) VALUES("${usernameController.text}")');
-    }).then((value) {
-      debugPrint('User Data Inserted');
-
-      usernameController.clear();
-      getUsersData();
+      // usernameController.clear();
+      getTasksData();
 
       emit(AppDatabaseUserCreated());
     });
   }
 
-  List<Map> users = [];
+  List<TaskModel> tasks = [];
 
-  void getUsersData() async {
+  void getTasksData() async {
     emit(AppDatabaseLoading());
 
-    database.rawQuery('SELECT * FROM users').then((value) {
-      debugPrint('Users Data Fetched');
-      users = value;
-      debugPrint(users.toString());
+    tasks = [];
+
+    database.rawQuery('SELECT * FROM tasks').then((value) {
+      debugPrint('Tasks Data Fetched');
+      debugPrint(value.toString());
+
+      for (var element in value) {
+        tasks.add(TaskModel.fromJson(element));
+      }
+
+      debugPrint(tasks.toString());
       emit(AppDatabaseUsers());
     });
   }
@@ -92,6 +115,28 @@ class AppBloc extends Cubit<AppStates> {
     emit(AppSelectUser());
   }
 
+  void updateCompleteTask(int taskId) async {
+    int completed = tasks.firstWhere((element) => element.id == taskId).completed == 1 ? 0 : 1;
+
+    database.rawUpdate(
+        'UPDATE tasks SET completed = ? WHERE id = $taskId', [completed]).then((value) {
+
+      debugPrint('Task Data Updated');
+      getTasksData();
+    });
+  }
+
+  void updateFavoriteTask(int taskId) async {
+    int favorite = tasks.firstWhere((element) => element.id == taskId).favorite == 1 ? 0 : 1;
+
+    database.rawUpdate(
+        'UPDATE tasks SET favorite = ? WHERE id = $taskId', [favorite]).then((value) {
+
+      debugPrint('Task Data Updated');
+      getTasksData();
+    });
+  }
+
   void updateUserData() async {
     database.rawUpdate(
         'UPDATE users SET name = ? WHERE id = ${selectedUser['id']}', [
@@ -101,7 +146,22 @@ class AppBloc extends Cubit<AppStates> {
       usernameController.clear();
 
       debugPrint('User Data Updated');
-      getUsersData();
+      getTasksData();
     });
+  }
+
+  List<MaterialColor> taskColors = [
+    Colors.red,
+    Colors.blue,
+    Colors.yellow,
+    Colors.orange,
+    Colors.purple,
+  ];
+
+  int selectedColorIndex = 0;
+
+  void changeColor(index) {
+    selectedColorIndex = index;
+    emit(TaskColorChanged());
   }
 }
