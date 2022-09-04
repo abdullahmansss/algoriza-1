@@ -1,12 +1,14 @@
-import 'dart:ffi';
-
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
+import 'package:test1/core/models/current_weather_model.dart';
 import 'package:test1/core/models/task_model.dart';
 import 'package:test1/core/util/blocs/app/states.dart';
-import 'package:path/path.dart' as p;
+import 'package:test1/core/util/network/remote/dio_helper.dart';
+import 'package:test1/core/util/network/remote/end_points.dart';
 
 class AppBloc extends Cubit<AppStates> {
   AppBloc() : super(AppInitialState());
@@ -116,22 +118,26 @@ class AppBloc extends Cubit<AppStates> {
   }
 
   void updateCompleteTask(int taskId) async {
-    int completed = tasks.firstWhere((element) => element.id == taskId).completed == 1 ? 0 : 1;
+    int completed =
+        tasks.firstWhere((element) => element.id == taskId).completed == 1
+            ? 0
+            : 1;
 
-    database.rawUpdate(
-        'UPDATE tasks SET completed = ? WHERE id = $taskId', [completed]).then((value) {
-
+    database.rawUpdate('UPDATE tasks SET completed = ? WHERE id = $taskId',
+        [completed]).then((value) {
       debugPrint('Task Data Updated');
       getTasksData();
     });
   }
 
   void updateFavoriteTask(int taskId) async {
-    int favorite = tasks.firstWhere((element) => element.id == taskId).favorite == 1 ? 0 : 1;
+    int favorite =
+        tasks.firstWhere((element) => element.id == taskId).favorite == 1
+            ? 0
+            : 1;
 
-    database.rawUpdate(
-        'UPDATE tasks SET favorite = ? WHERE id = $taskId', [favorite]).then((value) {
-
+    database.rawUpdate('UPDATE tasks SET favorite = ? WHERE id = $taskId',
+        [favorite]).then((value) {
       debugPrint('Task Data Updated');
       getTasksData();
     });
@@ -163,5 +169,38 @@ class AppBloc extends Cubit<AppStates> {
   void changeColor(index) {
     selectedColorIndex = index;
     emit(TaskColorChanged());
+  }
+
+  CurrentWeatherModel? currentWeatherModel;
+
+  void getCurrentWeather() async {
+    Dio dio = Dio(
+      BaseOptions(
+        baseUrl: 'https://api.weatherapi.com',
+        receiveDataWhenStatusError: true,
+      ),
+    );
+
+    emit(GetCurrentWeatherLoading());
+
+    Response currentWeatherResponse =
+        await DioHelper.getData(url: forecast, query: {
+      'key': '3abc4ac71f114deb86380405201809',
+      'q': 'Cairo',
+      'days': 1,
+      'aqi': 'no',
+      'alerts': 'no',
+    });
+
+    emit(GetCurrentWeatherSuccess());
+
+    debugPrint('---------------------');
+    currentWeatherModel = CurrentWeatherModel.fromJson(
+      currentWeatherResponse.data,
+    );
+
+    debugPrint(currentWeatherModel!.location.name);
+    debugPrint(currentWeatherModel!.current.tempC.toString());
+    debugPrint(currentWeatherModel!.current.condition);
   }
 }

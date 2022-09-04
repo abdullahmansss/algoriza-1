@@ -17,3 +17,7 @@ class AppDatabaseUsers extends AppStates {}
 class AppSelectUser extends AppStates {}
 
 class TaskColorChanged extends AppStates {}
+
+class GetCurrentWeatherLoading extends AppStates {}
+
+class GetCurrentWeatherSuccess extends AppStates {}

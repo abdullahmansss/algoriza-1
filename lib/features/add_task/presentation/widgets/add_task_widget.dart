@@ -3,10 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:test1/core/models/reminder_model.dart';
 import 'package:test1/core/util/blocs/app/cubit.dart';
 import 'package:test1/core/util/blocs/app/states.dart';
-import 'package:test1/features/home/presentation/widgets/all_widget.dart';
-import 'package:test1/features/home/presentation/widgets/completed_widget.dart';
-import 'package:test1/features/home/presentation/widgets/favorites_widget.dart';
-import 'package:test1/features/home/presentation/widgets/un_completed_widget.dart';
 
 class AddTaskWidget extends StatefulWidget {
   const AddTaskWidget({Key? key}) : super(key: key);
