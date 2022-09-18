@@ -1,23 +1,25 @@
+import 'package:test1/core/error/exceptions.dart';
+
 abstract class AppStates {}
 
 class AppInitialState extends AppStates {}
 
-class AppDatabaseInitialized extends AppStates {}
+class UserLoginLoadingState extends AppStates {}
 
-class AppDatabaseTableCreated extends AppStates {}
+class UserLoginSuccessState extends AppStates {}
 
-class AppDatabaseOpened extends AppStates {}
+class UserProfileLoadingState extends AppStates {}
 
-class AppDatabaseUserCreated extends AppStates {}
+class UserProfileSuccessState extends AppStates {}
 
-class AppDatabaseLoading extends AppStates {}
+class HotelsLoadingState extends AppStates {}
 
-class AppDatabaseUsers extends AppStates {}
+class HotelsSuccessState extends AppStates {}
 
-class AppSelectUser extends AppStates {}
+class ErrorState extends AppStates {
+  final PrimaryServerException exception;
 
-class TaskColorChanged extends AppStates {}
-
-class GetCurrentWeatherLoading extends AppStates {}
-
-class GetCurrentWeatherSuccess extends AppStates {}
+  ErrorState({
+    required this.exception,
+  });
+}

@@ -8,18 +8,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Board',
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.calendar_month_rounded,
-              color: Colors.black54,
-            ),
-            onPressed: () {},
-          ),
-        ],
+        title: const Text('Home'),
       ),
       body: const HomeWidget(),
     );

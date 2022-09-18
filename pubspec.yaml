@@ -40,6 +40,8 @@ dependencies:
   sqflite: ^2.0.3
   path: ^1.8.1
   dio: ^4.0.6
+  get_it: ^7.2.0
+  dartz: ^0.10.1
 
 dev_dependencies:
   flutter_test:

@@ -1,17 +1,16 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:test1/core/di/injection.dart';
 import 'package:test1/core/util/blocs/app/cubit.dart';
 import 'package:test1/core/util/network/remote/dio_helper.dart';
-import 'package:test1/features/home/presentation/pages/home_page.dart';
-import 'package:test1/features/weather/presentation/pages/weather_page.dart';
+import 'package:test1/core/util/routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  DioHelper();
+  init();
 
   runApp(const MyApp());
 }
@@ -24,7 +23,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AppBloc>(
-          create: (context) => AppBloc()..initDatabase(),
+          create: (context) => sl<AppBloc>(),
         ),
       ],
       child: MaterialApp(
@@ -52,8 +51,14 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        home: const WeatherPage(),
+        routes: Routes.routes,
+        initialRoute: Routes.home,
       ),
     );
   }
+}
+
+extension NavigationContext on BuildContext {
+  get pop => Navigator.pop(this);
+  set push(String page) => Navigator.pushNamed(this, page);
 }

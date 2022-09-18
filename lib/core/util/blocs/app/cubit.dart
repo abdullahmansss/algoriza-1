@@ -5,202 +5,85 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 import 'package:test1/core/models/current_weather_model.dart';
+import 'package:test1/core/models/hotel_model.dart';
+import 'package:test1/core/models/login_model.dart';
+import 'package:test1/core/models/profile_model.dart';
 import 'package:test1/core/models/task_model.dart';
 import 'package:test1/core/util/blocs/app/states.dart';
 import 'package:test1/core/util/network/remote/dio_helper.dart';
 import 'package:test1/core/util/network/remote/end_points.dart';
+import 'package:test1/core/util/network/repository.dart';
 
 class AppBloc extends Cubit<AppStates> {
-  AppBloc() : super(AppInitialState());
+  final Repository repository;
+
+  AppBloc({
+    required this.repository,
+  }) : super(AppInitialState());
 
   static AppBloc get(context) => BlocProvider.of<AppBloc>(context);
 
-  late Database database;
+  LoginModel? loginModel;
 
-  void initDatabase() async {
-    var databasesPath = await getDatabasesPath();
-    String path = p.join(databasesPath, 'tasks.db');
+  void userLogin() async {
+    emit(UserLoginLoadingState());
 
-    debugPrint('AppDatabaseInitialized');
-
-    openAppDatabase(
-      path: path,
+    final response = await repository.login(
+      email: 'abdullah.mansour@gmail.com',
+      password: '123456',
     );
 
-    emit(AppDatabaseInitialized());
-  }
-
-  void openAppDatabase({
-    required String path,
-  }) async {
-    openDatabase(
-      path,
-      version: 1,
-      onCreate: (Database db, int version) async {
-        await db.execute(
-          'CREATE TABLE tasks (id INTEGER PRIMARY KEY,'
-          ' title TEXT, date TEXT, startTime TEXT,'
-          ' endTime TEXT,'
-          ' reminder INTEGER,'
-          ' color INTEGER,'
-          ' completed INTEGER,'
-          ' favorite INTEGER)',
-        );
-
-        debugPrint('Table Created');
+    response.fold(
+      (l) {
+        emit(ErrorState(exception: l));
       },
-      onOpen: (Database db) {
-        debugPrint('AppDatabaseOpened');
-        database = db;
+      (r) {
+        loginModel = r;
 
-        getTasksData();
+        emit(UserLoginSuccessState());
       },
     );
   }
 
-  TextEditingController usernameController = TextEditingController();
+  ProfileModel? profileModel;
 
-  void insertTaskData({
-    required String title,
-    required String date,
-    required String startTime,
-    required String endTime,
-    required int reminder,
-  }) async {
-    await database.transaction(
-      (txn) async {
-        int id = await txn.rawInsert(
-          'INSERT INTO tasks (title, date, startTime, endTime, reminder, color, completed, favorite)'
-          ' VALUES ("$title", "$date", "$startTime", "$endTime", $reminder, $selectedColorIndex, 1, 1)',
-        );
-        debugPrint('Task Inserted');
+  void userProfile() async {
+    emit(UserProfileLoadingState());
+
+    final response = await repository.getProfile(
+      token: loginModel!.data!.token,
+    );
+
+    response.fold(
+          (l) {
+        emit(ErrorState(exception: l));
       },
-    ).then((value) {
-      debugPrint('Task Data Inserted');
+          (r) {
+            profileModel = r;
 
-      // usernameController.clear();
-      getTasksData();
-
-      emit(AppDatabaseUserCreated());
-    });
+        emit(UserProfileSuccessState());
+      },
+    );
   }
 
-  List<TaskModel> tasks = [];
+  List<HotelModel> hotels = [];
 
-  void getTasksData() async {
-    emit(AppDatabaseLoading());
+  void getHotels() async {
+    emit(HotelsLoadingState());
 
-    tasks = [];
-
-    database.rawQuery('SELECT * FROM tasks').then((value) {
-      debugPrint('Tasks Data Fetched');
-      debugPrint(value.toString());
-
-      for (var element in value) {
-        tasks.add(TaskModel.fromJson(element));
-      }
-
-      debugPrint(tasks.toString());
-      emit(AppDatabaseUsers());
-    });
-  }
-
-  Map selectedUser = {};
-
-  void selectUserToUpdate({
-    required Map user,
-  }) {
-    selectedUser = user;
-
-    usernameController.text = selectedUser['name'];
-
-    emit(AppSelectUser());
-  }
-
-  void updateCompleteTask(int taskId) async {
-    int completed =
-        tasks.firstWhere((element) => element.id == taskId).completed == 1
-            ? 0
-            : 1;
-
-    database.rawUpdate('UPDATE tasks SET completed = ? WHERE id = $taskId',
-        [completed]).then((value) {
-      debugPrint('Task Data Updated');
-      getTasksData();
-    });
-  }
-
-  void updateFavoriteTask(int taskId) async {
-    int favorite =
-        tasks.firstWhere((element) => element.id == taskId).favorite == 1
-            ? 0
-            : 1;
-
-    database.rawUpdate('UPDATE tasks SET favorite = ? WHERE id = $taskId',
-        [favorite]).then((value) {
-      debugPrint('Task Data Updated');
-      getTasksData();
-    });
-  }
-
-  void updateUserData() async {
-    database.rawUpdate(
-        'UPDATE users SET name = ? WHERE id = ${selectedUser['id']}', [
-      (usernameController.text),
-    ]).then((value) {
-      selectedUser = {};
-      usernameController.clear();
-
-      debugPrint('User Data Updated');
-      getTasksData();
-    });
-  }
-
-  List<MaterialColor> taskColors = [
-    Colors.red,
-    Colors.blue,
-    Colors.yellow,
-    Colors.orange,
-    Colors.purple,
-  ];
-
-  int selectedColorIndex = 0;
-
-  void changeColor(index) {
-    selectedColorIndex = index;
-    emit(TaskColorChanged());
-  }
-
-  CurrentWeatherModel? currentWeatherModel;
-
-  void getCurrentWeather() async {
-    Dio dio = Dio(
-      BaseOptions(
-        baseUrl: 'https://api.weatherapi.com',
-        receiveDataWhenStatusError: true,
-      ),
+    final response = await repository.getHotels(
+      page: 1,
     );
 
-    emit(GetCurrentWeatherLoading());
+    response.fold(
+          (l) {
+        emit(ErrorState(exception: l));
+      },
+          (r) {
+            hotels = r.data!.data;
 
-    Response currentWeatherResponse =
-        await DioHelper.getData(url: forecast, query: {
-      'key': '3abc4ac71f114deb86380405201809',
-      'q': 'Cairo',
-      'days': 1,
-      'aqi': 'no',
-      'alerts': 'no',
-    });
-
-    emit(GetCurrentWeatherSuccess());
-
-    debugPrint('---------------------');
-    currentWeatherModel = CurrentWeatherModel.fromJson(
-      currentWeatherResponse.data,
+        emit(HotelsSuccessState());
+      },
     );
-
-    debugPrint(currentWeatherModel!.location.name);
-    debugPrint(currentWeatherModel!.current.tempC.toString());
-    debugPrint(currentWeatherModel!.current.condition);
   }
 }
