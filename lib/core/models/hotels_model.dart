@@ -21,13 +21,19 @@ class HotelsModel {
 
 class HotelsDataModel {
   final List<HotelModel> data;
+  final int lastPage;
+  final int total;
 
   HotelsDataModel({
     required this.data,
+    required this.lastPage,
+    required this.total,
   });
 
   factory HotelsDataModel.fromJson(Map<String, dynamic> json) {
     return HotelsDataModel(
+      lastPage: json['last_page'],
+      total: json['total'],
       data: List<HotelModel>.from(
         json['data'].map(
           (x) => HotelModel.fromJson(x),

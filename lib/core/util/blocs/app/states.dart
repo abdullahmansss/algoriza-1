@@ -16,6 +16,8 @@ class HotelsLoadingState extends AppStates {}
 
 class HotelsSuccessState extends AppStates {}
 
+class ToggleIsEndState extends AppStates {}
+
 class ErrorState extends AppStates {
   final PrimaryServerException exception;
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:test1/core/util/blocs/app/cubit.dart';
 import 'package:test1/core/util/blocs/app/states.dart';
+import 'package:test1/core/util/routes.dart';
+import 'package:test1/main.dart';
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({Key? key}) : super(key: key);
@@ -47,6 +49,12 @@ class _HomeWidgetState extends State<HomeWidget> {
                 AppBloc.get(context).getHotels();
               },
               child: const Text('Get Hotels'),
+            ),
+            MaterialButton(
+              onPressed: () {
+                context.push = Routes.explore;
+              },
+              child: const Text('Explore'),
             ),
           ],
         );

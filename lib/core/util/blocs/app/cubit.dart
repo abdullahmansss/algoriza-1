@@ -67,12 +67,22 @@ class AppBloc extends Cubit<AppStates> {
   }
 
   List<HotelModel> hotels = [];
+  int lastPage = 1;
+  int total = 0;
+  int currentPage = 1;
 
-  void getHotels() async {
+  void getHotels({
+  bool isForce = false,
+}) async {
     emit(HotelsLoadingState());
 
+    if(isForce) {
+      hotels = [];
+      currentPage = 1;
+    }
+
     final response = await repository.getHotels(
-      page: 1,
+      page: currentPage,
     );
 
     response.fold(
@@ -80,10 +90,27 @@ class AppBloc extends Cubit<AppStates> {
         emit(ErrorState(exception: l));
       },
           (r) {
-            hotels = r.data!.data;
+            hotels.addAll(r.data!.data);
+
+            currentPage++;
+
+            if(lastPage == 1) {
+              lastPage = r.data!.lastPage;
+              total = r.data!.total;
+            }
+
+            isEnd = false;
 
         emit(HotelsSuccessState());
       },
     );
+  }
+
+  bool isEnd = false;
+
+  void toggleIsEnd() {
+    isEnd = !isEnd;
+
+    emit(ToggleIsEndState());
   }
 }

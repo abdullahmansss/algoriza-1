@@ -39,7 +39,7 @@ class RepositoryImplementation extends Repository {
           endPoint: hotelsEndPoint,
           query: {
             'page': page,
-            'count': 10,
+            'count': 4,
           }
         );
 
