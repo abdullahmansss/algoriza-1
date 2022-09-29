@@ -6,6 +6,16 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Test1</string>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>Used to demonstrate image picker plugin</string>
+
+    <key>NSCameraUsageDescription</key>
+	<string>Used to demonstrate image picker plugin</string>
+
+    <key>NSMicrophoneUsageDescription</key>
+	<string>Used to capture audio for image picker plugin</string>
+
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

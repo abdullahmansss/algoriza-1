@@ -42,6 +42,7 @@ dependencies:
   dio: ^4.0.6
   get_it: ^7.2.0
   dartz: ^0.10.1
+  image_picker: ^0.8.5+3
 
 dev_dependencies:
   flutter_test:

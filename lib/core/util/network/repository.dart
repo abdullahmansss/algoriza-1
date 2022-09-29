@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:test1/core/error/exceptions.dart';
+import 'package:test1/core/models/facilities_model.dart';
 import 'package:test1/core/models/hotels_model.dart';
 import 'package:test1/core/models/login_model.dart';
 import 'package:test1/core/models/profile_model.dart';
@@ -17,9 +21,23 @@ abstract class Repository {
     required String token,
   });
 
+  Future<Either<PrimaryServerException, ProfileModel>> updateProfile({
+    required String token,
+    required String name,
+    required String email,
+    required File image,
+  });
+
   Future<Either<PrimaryServerException, HotelsModel>> getHotels({
     required int page,
   });
+
+  Future<Either<PrimaryServerException, HotelsModel>> searchHotels({
+    required Map<String, int> facilities,
+    required String name,
+  });
+
+  Future<Either<PrimaryServerException, FacilitiesModel>> getFacilities();
 }
 
 class RepositoryImplementation extends Repository {
@@ -30,18 +48,57 @@ class RepositoryImplementation extends Repository {
   });
 
   @override
-  Future<Either<PrimaryServerException, HotelsModel>> getHotels({
-  required int page,
-}) async {
+  Future<Either<PrimaryServerException, HotelsModel>> searchHotels({
+    required Map<String, int> facilities,
+    required String name,
+  }) async {
     return basicErrorHandling<HotelsModel>(
       onSuccess: () async {
         final response = await dioHelper.get(
-          endPoint: hotelsEndPoint,
+          endPoint: searchEndPoint,
           query: {
-            'page': page,
-            'count': 4,
-          }
+            'name': name,
+            ...facilities,
+            'count': 10,
+            'page': 1,
+          },
         );
+
+        return HotelsModel.fromJson(response);
+      },
+      onPrimaryServerException: (e) async {
+        return e;
+      },
+    );
+  }
+
+  @override
+  Future<Either<PrimaryServerException, FacilitiesModel>>
+      getFacilities() async {
+    return basicErrorHandling<FacilitiesModel>(
+      onSuccess: () async {
+        final response = await dioHelper.get(
+          endPoint: facilitiesEndPoint,
+        );
+
+        return FacilitiesModel.fromJson(response);
+      },
+      onPrimaryServerException: (e) async {
+        return e;
+      },
+    );
+  }
+
+  @override
+  Future<Either<PrimaryServerException, HotelsModel>> getHotels({
+    required int page,
+  }) async {
+    return basicErrorHandling<HotelsModel>(
+      onSuccess: () async {
+        final response = await dioHelper.get(endPoint: hotelsEndPoint, query: {
+          'page': page,
+          'count': 4,
+        });
 
         return HotelsModel.fromJson(response);
       },
@@ -60,6 +117,37 @@ class RepositoryImplementation extends Repository {
         final response = await dioHelper.get(
           endPoint: profileEndPoint,
           token: token,
+        );
+
+        return ProfileModel.fromJson(response);
+      },
+      onPrimaryServerException: (e) async {
+        return e;
+      },
+    );
+  }
+
+  @override
+  Future<Either<PrimaryServerException, ProfileModel>> updateProfile({
+    required String token,
+    required String name,
+    required String email,
+    required File image,
+  }) async {
+    return basicErrorHandling<ProfileModel>(
+      onSuccess: () async {
+        final response = await dioHelper.post(
+          endPoint: updateProfileEndPoint,
+          token: token,
+          isMultipart: true,
+          data: FormData.fromMap({
+            'name': name,
+            'email': email,
+            'image': await MultipartFile.fromFile(
+              image.path,
+              filename: Uri.file(image.path).pathSegments.last,
+            ),
+          }),
         );
 
         return ProfileModel.fromJson(response);
